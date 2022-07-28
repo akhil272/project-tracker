@@ -14,15 +14,15 @@ model Client {
   id          Int      @id @default(autoincrement())
   name        String   @unique
   phoneNumber String
-  addres      Address?
+  address     Address? @relation(fields: [addressId], references: [id])
+  addressId   Int?     @unique
 }
 
 model Address {
   id           Int     @id @default(autoincrement())
-  pinCode      Int
+  pinCode      Int?
   state        String?
   country      String
   addressLine1 String?
-  client       Client  @relation(fields: [clientId], references: [id])
-  clientId     Int     @unique
+  client       Client?
 }
