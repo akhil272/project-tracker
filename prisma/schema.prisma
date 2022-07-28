@@ -47,7 +47,7 @@ model Process {
 model Task {
   id        Int       @id @default(autoincrement())
   name      String
-  Process   Process?  @relation(fields: [processId], references: [id])
+  process   Process?  @relation(fields: [processId], references: [id])
   processId Int?
   startTime DateTime?
   endTime   DateTime?

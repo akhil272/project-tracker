@@ -15,9 +15,11 @@ export class CreateTaskDto {
   processId: number;
 
   @IsDateString()
+  @IsOptional()
   startTime: Date;
 
   @IsDateString()
+  @IsOptional()
   endTime: Date;
 
   @IsOptional()

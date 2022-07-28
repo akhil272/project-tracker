@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateProcessDto } from './create-process.dto';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UpdateProcessDto extends PartialType(CreateProcessDto) {}
+export class UpdateProcessDto {
+  @IsOptional()
+  @IsString()
+  name: string;
+}

@@ -1,28 +1,79 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaError } from 'src/utils/prismaError';
 import { CreateProcessDto } from './dto/create-process.dto';
 import { UpdateProcessDto } from './dto/update-process.dto';
+import { ProcessNotFoundException } from './exceptions/processNotFound.exception';
 
 @Injectable()
 export class ProcessService {
   constructor(private readonly prismaService: PrismaService) {}
-  create(createProcessDto: CreateProcessDto) {
-    return 'This action adds a new process';
+  async create(createProcessDto: CreateProcessDto) {
+    try {
+      const process = await this.prismaService.process.create({
+        data: {
+          name: createProcessDto.name,
+          projects: {
+            connect: {
+              id: createProcessDto.projectId,
+            },
+          },
+        },
+      });
+      return process;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 
   findAll() {
-    return `This action returns all process`;
+    return this.prismaService.process.findMany({ include: { projects: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} process`;
+  async findOne(id: number) {
+    const process = await this.prismaService.process.findUnique({
+      where: { id },
+    });
+    if (!process) {
+      throw new ProcessNotFoundException(id);
+    }
+    return process;
   }
 
-  update(id: number, updateProcessDto: UpdateProcessDto) {
-    return `This action updates a #${id} process`;
+  async update(id: number, updateProcessDto: UpdateProcessDto) {
+    try {
+      return await this.prismaService.process.update({
+        data: {
+          ...updateProcessDto,
+          id: undefined,
+        },
+        where: { id },
+      });
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new ProcessNotFoundException(id);
+      }
+      throw error;
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} process`;
+  async remove(id: number) {
+    try {
+      return await this.prismaService.process.delete({
+        where: { id },
+      });
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new ProcessNotFoundException(id);
+      }
+      throw error;
+    }
   }
 }
