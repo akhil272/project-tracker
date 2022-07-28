@@ -11,11 +11,12 @@ datasource db {
 }
 
 model Client {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
   phoneNumber String
-  address     Address? @relation(fields: [addressId], references: [id])
-  addressId   Int?     @unique
+  address     Address?  @relation(fields: [addressId], references: [id])
+  addressId   Int?      @unique
+  projects    Project[]
 }
 
 model Address {
@@ -25,4 +26,12 @@ model Address {
   country      String
   addressLine1 String?
   client       Client?
+}
+
+model Project {
+  id       Int     @id @default(autoincrement())
+  name     String
+  type     String?
+  client   Client  @relation(fields: [clientId], references: [id])
+  clientId Int
 }
