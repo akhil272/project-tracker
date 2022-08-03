@@ -1,6 +1,5 @@
 import {
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -15,6 +14,14 @@ export class CreateClientDto {
   @IsPhoneNumber()
   @IsNotEmpty()
   phoneNumber: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl: string;
+
+  @IsOptional()
+  @IsString()
+  mapLink: string;
 
   address?: AddressDto;
 }

@@ -12,14 +12,7 @@ export class ProcessService {
   async create(createProcessDto: CreateProcessDto) {
     try {
       const process = await this.prismaService.process.create({
-        data: {
-          name: createProcessDto.name,
-          projects: {
-            connect: {
-              id: createProcessDto.projectId,
-            },
-          },
-        },
+        data: { ...createProcessDto },
       });
       return process;
     } catch (error) {
@@ -28,7 +21,7 @@ export class ProcessService {
   }
 
   findAll() {
-    return this.prismaService.process.findMany({ include: { projects: true } });
+    return this.prismaService.process.findMany();
   }
 
   async findOne(id: number) {

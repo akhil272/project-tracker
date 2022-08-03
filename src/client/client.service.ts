@@ -33,6 +33,7 @@ export class ClientService {
   async findOne(id: number) {
     const client = await this.prismaService.client.findUnique({
       where: { id },
+      include: { projects: { include: { processes: true } } },
     });
     if (!client) {
       throw new ClientNotFoundException(id);

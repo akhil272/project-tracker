@@ -14,6 +14,10 @@ export class CreateTaskDto {
   @IsPositive()
   processId: number;
 
+  @IsNumber()
+  @IsPositive()
+  projectId: number;
+
   @IsDateString()
   @IsOptional()
   startTime: Date;

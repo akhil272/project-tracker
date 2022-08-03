@@ -8,4 +8,8 @@ export class UpdateClientDto {
   @IsPhoneNumber()
   @IsOptional()
   phoneNumber: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl: string;
 }

@@ -15,6 +15,8 @@ model Client {
   name        String    @unique
   phoneNumber String
   address     Address?  @relation(fields: [addressId], references: [id])
+  imageUrl    String?
+  mapLink     String?
   addressId   Int?      @unique
   projects    Project[]
 }
@@ -29,27 +31,37 @@ model Address {
 }
 
 model Project {
-  id        Int       @id @default(autoincrement())
+  id        Int                 @id @default(autoincrement())
   name      String
   type      String?
-  client    Client    @relation(fields: [clientId], references: [id])
+  client    Client              @relation(fields: [clientId], references: [id])
   clientId  Int
-  processes Process[]
+  processes ProjectsOnProcess[]
 }
 
 model Process {
-  id       Int       @id @default(autoincrement())
+  id       Int                 @id @default(autoincrement())
   name     String
-  projects Project[]
-  tasks    Task[]
+  projects ProjectsOnProcess[]
+}
+
+model ProjectsOnProcess {
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId Int
+  process   Process @relation(fields: [processId], references: [id])
+  processId Int
+  tasks     Task[]
+
+  @@id([projectId, processId])
 }
 
 model Task {
-  id        Int       @id @default(autoincrement())
-  name      String
-  process   Process?  @relation(fields: [processId], references: [id])
-  processId Int?
-  startTime DateTime?
-  endTime   DateTime?
-  comments  String?
+  id                         Int                @id @default(autoincrement())
+  name                       String
+  startTime                  DateTime?
+  endTime                    DateTime?
+  comments                   String?
+  projectsOnProcess          ProjectsOnProcess? @relation(fields: [projectsOnProcessProjectId, projectsOnProcessProcessId], references: [projectId, processId])
+  projectsOnProcessProjectId Int?
+  projectsOnProcessProcessId Int?
 }

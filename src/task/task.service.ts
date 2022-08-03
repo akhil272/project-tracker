@@ -3,6 +3,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaError } from 'src/utils/prismaError';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { TaskTimerDto } from './dto/task-timer.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskNotFoundException } from './exceptions/taskNotFound.exception';
 
@@ -10,28 +11,49 @@ import { TaskNotFoundException } from './exceptions/taskNotFound.exception';
 export class TaskService {
   constructor(private readonly prismaService: PrismaService) {}
   async create(createTaskDto: CreateTaskDto) {
-    const { startTime, endTime, name, comments } = createTaskDto;
+    const { startTime, endTime, name, comments, processId, projectId } =
+      createTaskDto;
+    const projectOnProcess = await this.prismaService.projectsOnProcess.create({
+      data: {
+        process: {
+          connect: { id: processId },
+        },
+        project: {
+          connect: { id: projectId },
+        },
+      },
+    });
     const task = await this.prismaService.task.create({
       data: {
         name,
         startTime,
         endTime,
         comments,
-        process: {
-          connect: { id: createTaskDto.processId },
-        },
+        projectsOnProcessProcessId: projectOnProcess.processId,
+        projectsOnProcessProjectId: projectOnProcess.projectId,
       },
     });
     return task;
   }
 
   findAll() {
-    return this.prismaService.task.findMany({ include: { process: true } });
+    return this.prismaService.task.findMany({
+      include: {
+        projectsOnProcess: {
+          include: { project: { include: { client: true } } },
+        },
+      },
+    });
   }
 
   async findOne(id: number) {
     const task = await this.prismaService.task.findUnique({
       where: { id },
+      include: {
+        projectsOnProcess: {
+          include: { process: true, project: { include: { client: true } } },
+        },
+      },
     });
     if (!task) {
       throw new TaskNotFoundException(id);
@@ -44,6 +66,25 @@ export class TaskService {
       return await this.prismaService.task.update({
         data: {
           ...updateTaskDto,
+          id: undefined,
+        },
+        where: { id },
+      });
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new TaskNotFoundException(id);
+      }
+      throw error;
+    }
+  }
+  async taskTimer(id: number, taskTimerDto: TaskTimerDto) {
+    try {
+      return await this.prismaService.task.update({
+        data: {
+          ...taskTimerDto,
           id: undefined,
         },
         where: { id },
