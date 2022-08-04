@@ -92,10 +92,11 @@ export class TaskService {
       const end = new Date(taskTimerDto.endTime);
       const task = await this.findOne(id);
       const difference = Math.abs(end.valueOf() - task.startTime.valueOf());
-      const days = difference / (24 * 60 * 60 * 1000);
-      const hours = (days % 1) * 24;
-      const minutes = (hours % 1) * 60;
-      const totalTime = parseFloat(minutes.toFixed(2)) + task.totalTime;
+      // console.log(difference);
+      // const days = difference / (24 * 60 * 60 * 1000);
+      // const hours = (days % 1) * 24;
+      // const minutes = (hours % 1) * 60;
+      const totalTime = difference + task.totalTime;
       await this.prismaService.task.update({
         where: { id },
         data: {
@@ -106,11 +107,10 @@ export class TaskService {
     }
     try {
       return await this.prismaService.task.update({
+        where: { id },
         data: {
           ...taskTimerDto,
-          id: undefined,
         },
-        where: { id },
       });
     } catch (error) {
       if (

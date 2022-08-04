@@ -96,7 +96,7 @@ model Task {
   startTime                  DateTime?
   endTime                    DateTime?
   comments                   String?
-  totalTime                  Float?
+  totalTime                  Int                @default(0)
   projectsOnProcess          ProjectsOnProcess? @relation(fields: [projectsOnProcessProjectId, projectsOnProcessProcessId], references: [projectId, processId])
   projectsOnProcessProjectId Int?
   projectsOnProcessProcessId Int?
