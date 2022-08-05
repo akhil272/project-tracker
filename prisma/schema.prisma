@@ -10,6 +10,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id          Int      @id @default(autoincrement())
+  firstName   String
+  lastName    String?
+  email       String?
+  phoneNumber String?
+  password    String
+  members     Member[]
+}
+
+model Team {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  members     Member[]
+}
+
+model Member {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  team   Team @relation(fields: [teamId], references: [id])
+  userId Int
+  teamId Int
+  role   Role @relation(fields: [roleId], references: [id])
+  roleId Int
+}
+
+model Role {
+  id      Int      @id @default(autoincrement())
+  role    String
+  members Member[]
+}
+
 model Client {
   id          Int       @id @default(autoincrement())
   name        String    @unique
@@ -57,10 +90,13 @@ model ProjectsOnProcess {
 
 model Task {
   id                         Int                @id @default(autoincrement())
+  createdAt                  DateTime           @default(now())
   name                       String
+  running                    Boolean            @default(false)
   startTime                  DateTime?
   endTime                    DateTime?
   comments                   String?
+  totalTime                  Int                @default(0)
   projectsOnProcess          ProjectsOnProcess? @relation(fields: [projectsOnProcessProjectId, projectsOnProcessProcessId], references: [projectId, processId])
   projectsOnProcessProjectId Int?
   projectsOnProcessProcessId Int?

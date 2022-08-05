@@ -6,7 +6,6 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskTimerDto } from './dto/task-timer.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskNotFoundException } from './exceptions/taskNotFound.exception';
-
 @Injectable()
 export class TaskService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -38,6 +37,7 @@ export class TaskService {
 
   findAll() {
     return this.prismaService.task.findMany({
+      orderBy: { id: 'desc' },
       include: {
         projectsOnProcess: {
           include: { project: { include: { client: true } } },
@@ -80,14 +80,37 @@ export class TaskService {
       throw error;
     }
   }
+
   async taskTimer(id: number, taskTimerDto: TaskTimerDto) {
+    if (taskTimerDto.startTime) {
+      await this.prismaService.task.update({
+        where: { id },
+        data: { running: true },
+      });
+    }
+    if (taskTimerDto.endTime) {
+      const end = new Date(taskTimerDto.endTime);
+      const task = await this.findOne(id);
+      const difference = Math.abs(end.valueOf() - task.startTime.valueOf());
+      // console.log(difference);
+      // const days = difference / (24 * 60 * 60 * 1000);
+      // const hours = (days % 1) * 24;
+      // const minutes = (hours % 1) * 60;
+      const totalTime = difference + task.totalTime;
+      await this.prismaService.task.update({
+        where: { id },
+        data: {
+          totalTime,
+          running: false,
+        },
+      });
+    }
     try {
       return await this.prismaService.task.update({
+        where: { id },
         data: {
           ...taskTimerDto,
-          id: undefined,
         },
-        where: { id },
       });
     } catch (error) {
       if (
