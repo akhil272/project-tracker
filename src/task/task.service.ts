@@ -40,7 +40,7 @@ export class TaskService {
       orderBy: { id: 'desc' },
       include: {
         projectsOnProcess: {
-          include: { project: { include: { client: true } } },
+          include: { process: true, project: { include: { client: true } } },
         },
       },
     });
